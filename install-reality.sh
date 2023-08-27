@@ -7,6 +7,15 @@
 
 exitalert()  { echo "Error: $1" >&2; exit 1; }
 
+show_intro() {
+	echo 
+	echo "Welcome to XRay Reality and ShadowSocks installer"
+	echo "GitHub: https://github.com/Jaffarrr/Reality/blob/main/install-reality.sh"
+	echo 
+	echo "Copyright (c) https://github.com/Jaffarrr"
+	echo
+}
+
 gen_settings() {
 	UUID=`/opt/xray/xray uuid`
 	SSPASS=`openssl rand -base64 16`
@@ -187,19 +196,15 @@ reality_setup() {
 	########################################################
 	if [[ ! -e /usr/lib/systemd/system/xray.service ]]; then
 	########################################################
-		echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-		echo "Welcome to this OpenVPN server installer!"
-		echo "GitHub: https://github.com/"
-		echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-		
+		show_intro		
 		install_wget
 		check_architecture
 
 		LATEST_RELEASE="$(curl -s https://api.github.com/repos/XTLS/Xray-core/releases/latest | grep tag_name | cut -d: -f2 | sed -e 's/\"//g' -e 's/ //g' -e 's/,//g')"
 		echo "version: $LATEST_RELEASE"
 		if [[ "$LATEST_RELEASE" = "v1.7.5" ]]; then
-			echo "$LATEST_RELEASE is not compatible to Reality, changing to v1.8.1 pre-release"
-			LATEST_RELEASE="v1.8.1"
+			echo "$LATEST_RELEASE is not compatible to Reality, changing to v1.8.3 pre-release"
+			LATEST_RELEASE="v1.8.3"
 		fi
 
 		if [ -e $REL_NAME ]; then
@@ -229,13 +234,14 @@ reality_setup() {
 			exitalert "Installation file not found!"
 		fi
 	else
+		show_intro
 		echo
 		echo "XRay is already installed."
 		echo
 		echo "Select an option:"
 		echo "   1) Show existing settings"
-		echo "   2) Show link to share"
-		echo "   3) Show QR code to share"
+		echo "   2) Show Reality link and QR code to share"
+		echo "   3) Show ShadowSocks link and QR code to share"
 		echo "   4) Remove XRay"
 		echo "   5) Exit"
 		read -rp "Option: " option
@@ -247,15 +253,32 @@ reality_setup() {
 		1)
 			get_settings
 			show_settings
-			reality_setup
 		;;
 		2)
+			if ! hash qrencode 2>/dev/null; then
+				apt-get -yqq install qrencode >/dev/null
+			fi
 			detect_ip
 			get_settings
-			echo "vless://$UUID@$IP?security=reality&sni=www.nvidia.com&fp=firefox&pbk=$PUBKEY&type=tcp&flow=xtls-rprx-vision&encription=none&sid=$SHORTID&xver=h2#VLESS%20reality%20$IP" >vless
+			SETTINGS="vless://$UUID@$IP?security=reality&sni=www.nvidia.com&fp=firefox&pbk=$PUBKEY&type=tcp&flow=xtls-rprx-vision&encription=none&sid=$SHORTID#VLESS%20reality%20$IP" 
+			echo "Reality link:"
+			echo $SETTINGS
+			echo $SETTINGS >vless
+			echo "Link was saved to file 'vless'"
+			qrencode -t ansiutf8 $SETTINGS
 		;;
 		3)
-			echo ""
+			if ! hash qrencode 2>/dev/null; then
+				apt-get -yqq install qrencode >/dev/null
+			fi
+			detect_ip
+			get_settings
+			SETTINGS="ss://2022-blake3-aes-128-gcm:$SSPASS@$IP:8388#ss%202022%20$IP"
+			echo "ShadowSocks link:"
+			echo $SETTINGS
+			echo $SETTINGS >ss
+			echo "Link was saved to file 'ss'"
+			qrencode -t ansiutf8 $SETTINGS
 		;;
 		4)
 			read -rp "Confirm XRay removal? [y/N]: " remove
