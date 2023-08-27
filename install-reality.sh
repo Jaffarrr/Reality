@@ -26,7 +26,7 @@ gen_settings() {
 }
 
 check_architecture() {
-	if [[ $(arch)="x86_64"  ]]; then
+	if arch="x86_64"; then
 		REL_NAME="Xray-linux-64.zip"
 	else
 		REL_NAME="Xray-linux-32.zip"
@@ -35,16 +35,15 @@ check_architecture() {
 
 install_wget() {
 	# Detect some Debian minimal setups where neither wget nor curl are installed
-	if ! hash wget 2>/dev/null && ! hash curl 2>/dev/null; then
-		if [ "$auto" = 0 ]; then
-			echo "Wget is required to use this installer."
+	if ! hash wget 2>/dev/null || ! hash curl 2>/dev/null; then
+			echo "wget/curl is required to use this installer."
 			read -n1 -r -p "Press any key to install Wget and continue..."
-		fi
 		export DEBIAN_FRONTEND=noninteractive
 		(
 			set -x
 			apt-get -yqq update || apt-get -yqq update
 			apt-get -yqq install wget >/dev/null
+			apt-get -yqq install curl >/dev/null			
 		) || exitalert "apt-get install failed!"
 	fi
 }
