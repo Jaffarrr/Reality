@@ -27,7 +27,7 @@ gen_settings() {
 
 check_architecture() {
 	ARCC="$(arch)"
-	if [[ "$ARCH" == "x86_64" ]]; then
+	if [[ "$ARCC" == "x86_64" ]]; then
 		REL_NAME="Xray-linux-64.zip"
 	else
 		REL_NAME="Xray-linux-32.zip"
@@ -259,9 +259,6 @@ reality_setup() {
 			show_settings
 		;;
 		2)
-			if ! hash qrencode 2>/dev/null; then
-				apt-get -yqq install qrencode >/dev/null
-			fi
 			detect_ip
 			get_settings
 			SETTINGS="vless://$UUID@$IP?security=reality&sni=www.nvidia.com&fp=firefox&pbk=$PUBKEY&type=tcp&flow=xtls-rprx-vision&encription=none&sid=$SHORTID#VLESS%20reality%20$IP" 
@@ -269,12 +266,12 @@ reality_setup() {
 			echo $SETTINGS
 			echo $SETTINGS >vless
 			echo "Link was saved to file 'vless'"
-			qrencode -t ansiutf8 $SETTINGS
-		;;
-		3)
 			if ! hash qrencode 2>/dev/null; then
 				apt-get -yqq install qrencode >/dev/null
 			fi
+			qrencode -t ansiutf8 $SETTINGS
+		;;
+		3)
 			detect_ip
 			get_settings
 			SETTINGS="ss://2022-blake3-aes-128-gcm:$SSPASS@$IP:8388#ss%202022%20$IP"
@@ -282,6 +279,9 @@ reality_setup() {
 			echo $SETTINGS
 			echo $SETTINGS >ss
 			echo "Link was saved to file 'ss'"
+			if ! hash qrencode 2>/dev/null; then
+				apt-get -yqq install qrencode >/dev/null
+			fi
 			qrencode -t ansiutf8 $SETTINGS
 		;;
 		4)
