@@ -26,7 +26,8 @@ gen_settings() {
 }
 
 check_architecture() {
-	if arch="x86_64"; then
+	ARCC="$(arch)"
+	if [[ "$ARCH" == "x86_64" ]]; then
 		REL_NAME="Xray-linux-64.zip"
 	else
 		REL_NAME="Xray-linux-32.zip"
@@ -127,14 +128,14 @@ EOF
 }
 
 install_xray() {
-cat >> /usr/lib/systemd/system/xray.service <<EOF
+cat >> /etc/systemd/system/xray.service <<EOF
 [Unit]
 Description=Xray Service
 Documentation=https://github.com/xtls
 After=network.target nss-lookup.target
 
 [Service]
-User=monto
+User=$USER
 CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
 AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
 NoNewPrivileges=true
@@ -192,14 +193,18 @@ reality_setup() {
 		exitalert 'This installer needs to be run with "bash", not "sh".'
 	fi
 
-	########################################################
-	if [[ ! -e /usr/lib/systemd/system/xray.service ]]; then
-	########################################################
+	###############################################################################
+	if [[ ! -e /etc/systemd/system/xray.service || ! -e /opt/xray/xray ]]; then
+	###############################################################################
 		show_intro		
 		install_wget
 		check_architecture
 
 		LATEST_RELEASE="$(curl -s https://api.github.com/repos/XTLS/Xray-core/releases/latest | grep tag_name | cut -d: -f2 | sed -e 's/\"//g' -e 's/ //g' -e 's/,//g')"
+		#Don't know why it's https in some cases - check&correct
+		if [[ "$LATEST_RELEASE" = "https" ]]; then
+			LATEST_RELEASE="v1.8.3"
+		fi
 		echo "version: $LATEST_RELEASE"
 		if [[ "$LATEST_RELEASE" = "v1.7.5" ]]; then
 			echo "$LATEST_RELEASE is not compatible to Reality, changing to v1.8.3 pre-release"
@@ -215,7 +220,7 @@ reality_setup() {
 
 		if [[ -e $REL_NAME  ]]; then
 			mkdir /opt/xray >/dev/null 2>&1
-			unzip -o Xray-linux-64.zip -d /opt/xray >/dev/null
+			unzip -o $REL_NAME -d /opt/xray >/dev/null
 			chmod +x /opt/xray/xray
 		
 			gen_settings
@@ -287,10 +292,9 @@ reality_setup() {
 			done
 			if [[ "$remove" =~ ^[yY]$ ]]; then
 				systemctl disable --now xray
-				rm -f /usr/lib/systemd/system/xray.service >/dev/null
+				rm -f /etc/systemd/system/xray.service >/dev/null
 				rm -f /opt/xray/config.json >/dev/null
-				rm -f /opt/xray/*
-				rmdir --ignore-fail-on-non-empty /opt/xray
+				rm -r /opt/xray
 				echo "XRay removed!"
 			else
 				echo "XRay removal aborted!"
