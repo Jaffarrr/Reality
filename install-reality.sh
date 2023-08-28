@@ -22,6 +22,7 @@ gen_settings() {
 	KEYS=`/opt/xray/xray x25519 >/opt/xray/keys`
 	PRIVKEY=`cat /opt/xray/keys | grep "Private key:" | cut -d: -f2 | sed 's/ //g'`
 	PUBKEY=`cat /opt/xray/keys | grep "Public key:" | cut -d: -f2 | sed 's/ //g'`
+	rm -f /opt/xray/keys
 	SHORTID=`openssl rand -hex 8`
 }
 
@@ -47,6 +48,13 @@ install_wget() {
 			apt-get -yqq install curl >/dev/null			
 		) || exitalert "apt-get install failed!"
 	fi
+}
+
+detect_qrencode() {
+				if ! hash qrencode 2>/dev/null; then
+				echo "qrencode is not installed, trying to install..."
+				apt-get -yqq install qrencode >/dev/null
+			fi
 }
 
 make_config() {
@@ -266,9 +274,7 @@ reality_setup() {
 			echo $SETTINGS
 			echo $SETTINGS >vless
 			echo "Link was saved to file 'vless'"
-			if ! hash qrencode 2>/dev/null; then
-				apt-get -yqq install qrencode >/dev/null
-			fi
+			detect_qrencode
 			qrencode -t ansiutf8 $SETTINGS
 		;;
 		3)
@@ -279,9 +285,7 @@ reality_setup() {
 			echo $SETTINGS
 			echo $SETTINGS >ss
 			echo "Link was saved to file 'ss'"
-			if ! hash qrencode 2>/dev/null; then
-				apt-get -yqq install qrencode >/dev/null
-			fi
+			detect_qrencode
 			qrencode -t ansiutf8 $SETTINGS
 		;;
 		4)
