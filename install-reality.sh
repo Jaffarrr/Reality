@@ -39,7 +39,7 @@ install_wget() {
 	# Detect some Debian minimal setups where neither wget nor curl are installed
 	if ! hash wget 2>/dev/null || ! hash curl 2>/dev/null; then
 			echo "wget/curl is required to use this installer."
-			read -n1 -r -p "Press any key to install Wget and continue..."
+			read -n1 -r -p "Press any key to install wget/curl and continue..."
 		export DEBIAN_FRONTEND=noninteractive
 		(
 			set -x
@@ -136,6 +136,12 @@ EOF
 }
 
 install_xray() {
+UX="$USER"
+if [[ "$UX" == "root" ]]; then
+	UX="$SUDO_USER"
+else
+	UX="$USER"
+fi
 cat >> /etc/systemd/system/xray.service <<EOF
 [Unit]
 Description=Xray Service
@@ -143,7 +149,7 @@ Documentation=https://github.com/xtls
 After=network.target nss-lookup.target
 
 [Service]
-User=$USER
+User=$UX
 CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
 AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
 NoNewPrivileges=true
