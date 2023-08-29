@@ -177,12 +177,12 @@ update_ctl() {
 }
 
 get_settings() {
+	detect_ip
 	SSPASS="$(cat /opt/xray/config.json | grep password | cut -d: -f2 | sed -e 's/\"//g' -e 's/,//g' -e 's/ //g')"
-	SSPORT="$(cat /opt/xray/config.json | grep port | cut -d: -f2 | sed -e 's/\"//g' -e 's/,//g' -e 's/ //g')"
+	SSPORT="$(cat /opt/xray/config.json | grep port | cut -d: -f2 | sed -e 's/\"//g' -e 's/,//g' -e 's/ //g' -e 's/443//g')"
 	METHOD="$(cat /opt/xray/config.json | grep method | cut -d: -f2 | sed -e 's/\"//g' -e 's/,//g' -e 's/ //g')"
-	SNI="$(cat /opt/xray/config.json | grep dest | cut -d: -f2 | sed -e 's/\"//g' -e 's/,//g' -e 's/ //g')"
+	SNI="$(cat /opt/xray/config.json | grep -A 1 'serverNames' | cut -d'[' -f2 | sed -e 's/ //g' -e 's/\"//g' -n -e '2p')"
 	UUID="$(cat /opt/xray/config.json | grep '"id"' | cut -d: -f2 | sed -e 's/\"//g' -e 's/,//g' -e 's/ //g')"
-	#PRIVKEY="$(cat /opt/xray/config.json | grep privateKey | cut -d: -f2 | sed -e 's/\"//g' -e 's/,//g' -e 's/ //g')"
 	PUBKEY="$(cat /opt/xray/config.json | grep publickey | cut -d: -f2)"
 	SHORTID="$(cat /opt/xray/config.json | grep -A 1 'shortIds' | cut -d'[' -f2 | sed -e 's/ //g' -e 's/\"//g' -n -e '2p')"
 }
@@ -200,14 +200,25 @@ detect_ip() {
 
 show_settings() {
 	echo "Here are setup settings for client"
-	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-	echo "SadowSocks pasword: $SSPASS"
-	echo "SadowSocks port: $SSPORT"
-	echo "ShadowSocks method: $METHOD"
-	echo "UUID: $UUID"
+	echo "~~SHADOWSOCKS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+	echo "Server: $IP"
+	echo "Port: $SSPORT"
+	echo "Method: $METHOD"
+	echo "Password: $SSPASS"
+	echo "~~REALITY~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+	echo "Server: $IP"
+	echo "Port: 443"
+	echo "UUID (user login): $UUID"
+	echo "Flow: xtls-rprx-vision"
+	echo "Package encoding: xudp"
+	echo "Transport protocol: tcp"
+	echo "Transport encoding: tls"
+	echo "SNI: $SNI"
+	echo "ALPN: h2"
+	echo "uTLS fingerprint: firefox"
 	echo "Reality Pbk (Public key): $PUBKEY"
 	echo "Reality Sid (Short ID): $SHORTID"
-	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 }
 
 reality_setup() {
