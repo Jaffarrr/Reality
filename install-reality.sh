@@ -1,22 +1,25 @@
 #!/bin/bash
 #
+# https://github.com/Jaffarrr/Reality/blob/main/install-reality.sh
 #
-#
-#
+# Copyright (c) https://github.com/Jaffarrr
 #
 
 exitalert()  { echo "Error: $1" >&2; exit 1; }
 
 show_intro() {
-	echo 
+	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 	echo "Welcome to XRay Reality and ShadowSocks installer"
 	echo "GitHub: https://github.com/Jaffarrr/Reality/blob/main/install-reality.sh"
 	echo 
 	echo "Copyright (c) https://github.com/Jaffarrr"
-	echo
+	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 }
 
 gen_settings() {
+	SSPORT="8388"
+	SNI="www.nvidia.com"
+	METHOD="2022-blake3-aes-128-gcm"
 	UUID=`/opt/xray/xray uuid`
 	SSPASS=`openssl rand -base64 16`
 	KEYS=`/opt/xray/xray x25519 >/opt/xray/keys`
@@ -53,7 +56,9 @@ install_wget() {
 detect_qrencode() {
 				if ! hash qrencode 2>/dev/null; then
 				echo "qrencode is not installed, trying to install..."
-				apt-get -yqq install qrencode >/dev/null
+				(
+					apt-get -yqq install qrencode >/dev/null
+				) || exitalert "qrencode install failed!"
 			fi
 }
 
@@ -69,11 +74,11 @@ cat >> /opt/xray/config.json <<EOF
   },
   "inbounds": [
     {
-      "port": 8388,
+      "port": $SSPORT,
       "tag": "ss",
       "protocol": "shadowsocks",
       "settings": {
-        "method": "2022-blake3-aes-128-gcm",
+        "method": "$METHOD",
         "password": "$SSPASS",
         "network": "tcp,udp"
       }
@@ -97,10 +102,10 @@ cat >> /opt/xray/config.json <<EOF
         "security": "reality",
         "realitySettings": {
             "show": false,
-            "dest": "www.nvidia.com:443",
+            "dest": "$SNI:443",
             "xver": 0,
             "serverNames": [
-                "www.nvidia.com"
+                "$SNI"
             ],
             "privateKey": "$PRIVKEY",
             "minClientVer": "",
@@ -164,8 +169,18 @@ WantedBy=multi-user.target
 EOF
 }
 
+update_ctl() {
+	conf_f="/etc/sysctl.d/99-reality.conf"
+	mkdir -p /etc/sysctl.d
+	echo "net.ipv4.icmp_echo_ignore_all = 1" > $conf_f
+	sysctl -e -q -p "$conf_f"
+}
+
 get_settings() {
 	SSPASS="$(cat /opt/xray/config.json | grep password | cut -d: -f2 | sed -e 's/\"//g' -e 's/,//g' -e 's/ //g')"
+	SSPORT="$(cat /opt/xray/config.json | grep port | cut -d: -f2 | sed -e 's/\"//g' -e 's/,//g' -e 's/ //g')"
+	METHOD="$(cat /opt/xray/config.json | grep method | cut -d: -f2 | sed -e 's/\"//g' -e 's/,//g' -e 's/ //g')"
+	SNI="$(cat /opt/xray/config.json | grep dest | cut -d: -f2 | sed -e 's/\"//g' -e 's/,//g' -e 's/ //g')"
 	UUID="$(cat /opt/xray/config.json | grep '"id"' | cut -d: -f2 | sed -e 's/\"//g' -e 's/,//g' -e 's/ //g')"
 	#PRIVKEY="$(cat /opt/xray/config.json | grep privateKey | cut -d: -f2 | sed -e 's/\"//g' -e 's/,//g' -e 's/ //g')"
 	PUBKEY="$(cat /opt/xray/config.json | grep publickey | cut -d: -f2)"
@@ -187,7 +202,8 @@ show_settings() {
 	echo "Here are setup settings for client"
 	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 	echo "SadowSocks pasword: $SSPASS"
-	echo "SadowSocks port: 8388"
+	echo "SadowSocks port: $SSPORT"
+	echo "ShadowSocks method: $METHOD"
 	echo "UUID: $UUID"
 	echo "Reality Pbk (Public key): $PUBKEY"
 	echo "Reality Sid (Short ID): $SHORTID"
@@ -240,6 +256,7 @@ reality_setup() {
 			gen_settings
 			install_xray
 			make_config
+			update_ctl
 
 			systemctl enable xray
 			systemctl start xray
@@ -286,7 +303,7 @@ reality_setup() {
 		3)
 			detect_ip
 			get_settings
-			SETTINGS="ss://2022-blake3-aes-128-gcm:$SSPASS@$IP:8388#ss%202022%20$IP"
+			SETTINGS="ss://$METHOD:$SSPASS@$IP:$SSPORT#ss%202022%20$IP"
 			echo "ShadowSocks link:"
 			echo $SETTINGS
 			echo $SETTINGS >ss
@@ -305,6 +322,7 @@ reality_setup() {
 				rm -f /etc/systemd/system/xray.service >/dev/null
 				rm -f /opt/xray/config.json >/dev/null
 				rm -r /opt/xray
+				rm -f /etc/sysctl.d/99-reality.conf
 				echo "XRay removed!"
 			else
 				echo "XRay removal aborted!"
