@@ -275,6 +275,7 @@ reality_setup() {
 			echo
 			echo "Finished!"
 			echo
+			detect_ip
 			show_settings
 		else
 			exitalert "Installation file not found!"
