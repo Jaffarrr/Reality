@@ -243,10 +243,10 @@ reality_setup() {
 
 		LATEST_RELEASE="$(curl -s https://api.github.com/repos/XTLS/Xray-core/releases/latest | grep tag_name | cut -d: -f2 | sed -e 's/\"//g' -e 's/ //g' -e 's/,//g')"
 		#Don't know why it's https in some cases - check&correct
-		if [[ "$LATEST_RELEASE" = "https" ]]; then
-			LATEST_RELEASE="v1.8.3"
-		fi
-		echo "version: $LATEST_RELEASE"
+		while [ "$LATEST_RELEASE" == "https" ]; do
+			LATEST_RELEASE="$(curl -s https://api.github.com/repos/XTLS/Xray-core/releases/latest | grep tag_name | cut -d: -f2 | sed -e 's/\"//g' -e 's/ //g' -e 's/,//g')"
+		done
+		echo "Found version: $LATEST_RELEASE"
 		if [[ "$LATEST_RELEASE" = "v1.7.5" ]]; then
 			echo "$LATEST_RELEASE is not compatible to Reality, changing to v1.8.3 pre-release"
 			LATEST_RELEASE="v1.8.3"
