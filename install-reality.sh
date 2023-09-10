@@ -247,6 +247,7 @@ reality_setup() {
 		show_intro		
 		install_wget
 		check_architecture
+		checkVirt
 
 		LATEST_RELEASE="$(curl -s https://api.github.com/repos/XTLS/Xray-core/releases/latest | grep tag_name | cut -d: -f2 | sed -e 's/\"//g' -e 's/ //g' -e 's/,//g')"
 		#Don't know why it's https in some cases - check&correct
