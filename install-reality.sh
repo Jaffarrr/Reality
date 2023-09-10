@@ -38,6 +38,13 @@ check_architecture() {
 	fi
 }
 
+checkVirt() {
+        if [ "$(systemd-detect-virt)" == "openvz" ]; then
+                echo "OpenVZ is not supported"
+                exit 1
+        fi
+}
+
 install_wget() {
 	# Detect some Debian minimal setups where neither wget nor curl are installed
 	if ! hash wget 2>/dev/null || ! hash curl 2>/dev/null; then
