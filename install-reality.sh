@@ -47,15 +47,17 @@ checkVirt() {
 
 install_wget() {
 	# Detect some Debian minimal setups where neither wget nor curl are installed
-	if ! hash wget 2>/dev/null || ! hash curl 2>/dev/null; then
-			echo "wget/curl is required to use this installer."
-			read -n1 -r -p "Press any key to install wget/curl and continue..."
+	if ! hash wget 2>/dev/null || ! hash curl 2>/dev/null || ! hash apt-utils 2>/dev/null || ! hash unzip 2>/dev/null; then
+			echo "wget/curl/unzip/apt-utils is required to use this installer."
+			read -n1 -r -p "Press any key to install wget/curl/unzip/apt-utils and continue..."
 		export DEBIAN_FRONTEND=noninteractive
 		(
 			set -x
 			apt-get -yqq update || apt-get -yqq update
+			apt-get -yqq install apt-utils >/dev/null
 			apt-get -yqq install wget >/dev/null
-			apt-get -yqq install curl >/dev/null			
+			apt-get -yqq install curl >/dev/null
+			apt-get -yqq install unzip >/dev/null
 		) || exitalert "apt-get install failed!"
 	fi
 }
