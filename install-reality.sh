@@ -8,12 +8,14 @@
 exitalert()  { echo "Error: $1" >&2; exit 1; }
 
 show_intro() {
-	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-	echo "Welcome to XRay Reality and ShadowSocks installer"
-	echo "GitHub: https://github.com/Jaffarrr/Reality/blob/main/install-reality.sh"
-	echo 
-	echo "Copyright (c) https://github.com/Jaffarrr"
-	echo "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+	cat <<EOF
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Welcome to XRay Reality and ShadowSocks installer
+GitHub: https://github.com/Jaffarrr/Reality/blob/main/install-reality.sh
+	
+Copyright (c) https://github.com/Jaffarrr
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+EOF
 }
 
 gen_settings() {
@@ -23,8 +25,10 @@ gen_settings() {
 	UUID=`/opt/xray/xray uuid`
 	SSPASS=`openssl rand -base64 16`
 	KEYS=`/opt/xray/xray x25519 >/opt/xray/keys`
-	PRIVKEY=`cat /opt/xray/keys | grep "Private key:" | cut -d: -f2 | sed 's/ //g'`
-	PUBKEY=`cat /opt/xray/keys | grep "Public key:" | cut -d: -f2 | sed 's/ //g'`
+	#PRIVKEY=`cat /opt/xray/keys | grep "Private key:" | cut -d: -f2 | sed 's/ //g'`
+	PRIVKEY=`grep "Private key:" keys | awk '{print $3}'`
+	#PUBKEY=`cat /opt/xray/keys | grep "Public key:" | cut -d: -f2 | sed 's/ //g'`
+	PUBKEY=`grep "Public key:" keys | awk '{print $3}'`
 	rm -f /opt/xray/keys
 	SHORTID=`openssl rand -hex 8`
 }
