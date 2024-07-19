@@ -58,10 +58,7 @@ install_wget() {
 		(
 			set -x
 			apt-get -yqq update || apt-get -yqq update
-			apt-get -yqq install apt-utils >/dev/null
-			apt-get -yqq install wget >/dev/null
-			apt-get -yqq install curl >/dev/null
-			apt-get -yqq install unzip >/dev/null
+			apt-get -yqq install apt-utils wget curl unzip>/dev/null
 		) || exitalert "apt-get install failed!"
 	fi
 }
@@ -191,13 +188,13 @@ update_ctl() {
 
 get_settings() {
 	detect_ip
-	SSPASS="$(cat /opt/xray/config.json | grep password | cut -d: -f2 | sed -e 's/\"//g' -e 's/,//g' -e 's/ //g')"
-	SSPORT="$(cat /opt/xray/config.json | grep port | cut -d: -f2 | sed -e 's/\"//g' -e 's/,//g' -e 's/ //g' -e 's/443//g')"
-	METHOD="$(cat /opt/xray/config.json | grep method | cut -d: -f2 | sed -e 's/\"//g' -e 's/,//g' -e 's/ //g')"
-	SNI="$(cat /opt/xray/config.json | grep -A 1 'serverNames' | cut -d'[' -f2 | sed -e 's/ //g' -e 's/\"//g' -n -e '2p')"
-	UUID="$(cat /opt/xray/config.json | grep '"id"' | cut -d: -f2 | sed -e 's/\"//g' -e 's/,//g' -e 's/ //g')"
-	PUBKEY="$(cat /opt/xray/config.json | grep publickey | cut -d: -f2)"
-	SHORTID="$(cat /opt/xray/config.json | grep -A 1 'shortIds' | cut -d'[' -f2 | sed -e 's/ //g' -e 's/\"//g' -n -e '2p')"
+	SSPASS="$(grep password /opt/xray/config.json | cut -d: -f2 | sed -e 's/\"//g' -e 's/,//g' -e 's/ //g')"
+	SSPORT="$(grep port /opt/xray/config.json | cut -d: -f2 | sed -e 's/\"//g' -e 's/,//g' -e 's/ //g' -e 's/443//g')"
+	METHOD="$(grep method /opt/xray/config.json | cut -d: -f2 | sed -e 's/\"//g' -e 's/,//g' -e 's/ //g')"
+	SNI="$(grep -A 1 'serverNames' /opt/xray/config.json | cut -d'[' -f2 | sed -e 's/ //g' -e 's/\"//g' -n -e '2p')"
+	UUID="$(grep '"id"' /opt/xray/config.json | cut -d: -f2 | sed -e 's/\"//g' -e 's/,//g' -e 's/ //g')"
+	PUBKEY="$(grep publickey /opt/xray/config.json | cut -d: -f2)"
+	SHORTID="$(grep -A 1 'shortIds' /opt/xray/config.json | cut -d'[' -f2 | sed -e 's/ //g' -e 's/\"//g' -n -e '2p')"
 }
 
 detect_ip() {
