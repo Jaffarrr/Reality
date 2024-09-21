@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # https://github.com/Jaffarrr/Reality/blob/main/install-reality.sh
-#
+# wget https://raw.githubusercontent.com/Jaffarrr/Reality/refs/heads/main/install-reality.sh
 # Copyright (c) https://github.com/Jaffarrr
 #
 
@@ -26,9 +26,9 @@ gen_settings() {
 	SSPASS=`openssl rand -base64 16`
 	KEYS=`/opt/xray/xray x25519 >/opt/xray/keys`
 	#PRIVKEY=`cat /opt/xray/keys | grep "Private key:" | cut -d: -f2 | sed 's/ //g'`
-	PRIVKEY=`grep "Private key:" keys | awk '{print $3}'`
+	PRIVKEY=`grep "Private key:" /opt/xray/keys | awk '{print $3}'`
 	#PUBKEY=`cat /opt/xray/keys | grep "Public key:" | cut -d: -f2 | sed 's/ //g'`
-	PUBKEY=`grep "Public key:" keys | awk '{print $3}'`
+	PUBKEY=`grep "Public key:" /opt/xray/keys | awk '{print $3}'`
 	rm -f /opt/xray/keys
 	SHORTID=`openssl rand -hex 8`
 }
@@ -51,9 +51,9 @@ checkVirt() {
 
 install_wget() {
 	# Detect some Debian minimal setups where neither wget nor curl are installed
-	if ! hash wget 2>/dev/null || ! hash curl 2>/dev/null || ! hash apt-utils 2>/dev/null || ! hash unzip 2>/dev/null; then
+	if ! hash wget 2>/dev/null || ! hash curl 2>/dev/null || ! hash unzip 2>/dev/null; then
 			echo "wget/curl/unzip/apt-utils is required to use this installer."
-			read -n1 -r -p "Press any key to install wget/curl/unzip/apt-utils and continue..."
+			read -n1 -r -p "Press any key to install wget/curl/unzip and continue..."
 		export DEBIAN_FRONTEND=noninteractive
 		(
 			set -x
