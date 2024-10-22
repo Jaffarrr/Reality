@@ -315,7 +315,7 @@ reality_setup() {
 		2)
 			detect_ip
 			get_settings
-			SETTINGS="vless://$UUID@$IP?security=reality&sni=$SNI&fp=firefox&pbk=$PUBKEY&type=tcp&flow=xtls-rprx-vision&encription=none&sid=$SHORTID&alpn=h2&packetEncoding=xudp#VLESS%20reality%20$IP" 
+			SETTINGS="vless://$UUID@$IP?security=reality&sni=$SNI&fp=firefox&pbk=$PUBKEY&type=tcp&flow=xtls-rprx-vision&encryption=none&sid=$SHORTID&alpn=h2&packetEncoding=xudp#VLESS%20reality%20$IP" 
 			echo "Reality link:"
 			echo $SETTINGS
 			echo $SETTINGS >vless
